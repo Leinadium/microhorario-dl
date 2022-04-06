@@ -13,9 +13,12 @@ __version__ = "1.0"
 __copyright__ = "Copyright (c) 2022 Daniel Guimarães"
 __license__ = "MIT"
 
+from time import sleep
+
 from .consultas import consulta_inicial, consulta_intermediaria, consulta_final
 from .parser import converte_para_json
 from .models import RawDisciplina, Disciplina, Turma, Alocacao, Departamento, Destino
+from .ementa import consulta_ementa
 
 from typing import Dict, List, Optional
 
@@ -213,3 +216,24 @@ class Microhorario:
                 for d in self.disciplinas
             ]
         }
+
+    def coletar_ementas(self, verbose=True):
+        """
+        Coleta as ementas de todas as disciplinas cadastradas.
+
+        Essa função irá fazer uma chamada ao site da PUC para cada ementa, por isso
+        o tempo de execução é longo.
+
+        :param verbose: imprime o status atual no stdout
+        """
+
+        total = len(self._disciplinas)
+        for i, (cod, disc) in enumerate(self._disciplinas.items()):       # type: int, str, Disciplina
+            if verbose:
+                print(f"[{i}/{total}] Disciplina ({cod} - {disc.nome})", end='...\t\t')
+
+            disc.ementa = consulta_ementa(cod)
+            if verbose:
+                print(f'DONE ({disc.ementa[:20]}...)')
+            sleep(0.2)
+
