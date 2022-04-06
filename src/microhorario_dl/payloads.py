@@ -1,0 +1,40 @@
+PAYLOAD_INTERMEDIARIO = {
+  "ScriptManager1": "pnlConteudo|btnBuscar",
+  "__EVENTTARGET": "",
+  "__EVENTARGUMENT": "",
+  "ddlNivel": "Sem Distinção",
+  "txtCodigoDptDcp": "",
+  "txtNomeDcp": "",
+  "txtQtdCreditos": "",
+  "txtNomeProfessor": "",
+  "ddlBloqueio": "-1",
+  "ddlDia": "Qualquer dia",
+  "txtHoraInicio": "",
+  "txtHoraFim": "",
+  "ddlTurno": "-1",
+  "ddlDeptoSolicitante": "-1",
+  "hiddenInputToUpdateATBuffer_CommonToolkitScripts": "1",
+  "__ASYNCPOST": "true",
+  "btnBuscar": "Buscar"
+}
+
+PAYLOAD_FINAL = {
+  "ddlNivel": "Sem Distinção",
+  "txtCodigoDptDcp": "",
+  "txtNomeDcp": "",
+  "txtQtdCreditos": "",
+  "txtNomeProfessor": "",
+  "ddlBloqueio": "-1",
+  "ddlDia": "Qualquer dia",
+  "txtHoraInicio": "",
+  "txtHoraFim": "",
+  "ddlTurno": "-1",
+  "ddlDeptoSolicitante": "-1",
+  "ddlNumResultados": "25",
+  "ddlExtensao": "Texto",
+  "btnDownload": "Baixar",
+  "hiddenInputToUpdateATBuffer_CommonToolkitScripts": "1",
+  "__EVENTTARGET": "",
+  "__EVENTARGUMENT": "",
+  "__LASTFOCUS": ""
+}
