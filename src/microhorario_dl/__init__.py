@@ -24,7 +24,8 @@ from typing import Dict, List, Optional
 
 __all__ = [
     "Microhorario",
-    "models"
+    "models",
+    "exceptions"
 ]
 
 
@@ -108,26 +109,32 @@ class Microhorario:
 
     @property
     def periodo(self):
+        """O perído atual do microhorario"""
         return self._periodo
 
     @property
     def emissao(self):
+        """A data de emissão do download do microhorario"""
         return self._emissao
 
     @property
     def atualizacao(self):
+        """A última atualização do microhorario"""
         return self._atualizacao
 
     @property
     def disciplinas(self) -> List[Disciplina]:
+        """Lista das disciplinas baixados"""
         return list(self._disciplinas.values())
 
     @property
     def departamentos(self) -> List[Departamento]:
+        """Lista dos departamentos encontrados."""
         return list(self._departamentos.values())
 
     @property
     def raw(self):
+        """Dicionario dos dados baixados, sem processamento"""
         return self._dados_crus
 
     def _add_raw_disciplina(self, raw: RawDisciplina):

@@ -12,6 +12,18 @@ RE_HORARIO = re.compile(
 
 @dataclass
 class Horario:
+    # noinspection PyUnresolvedReferences
+    """Horario da turma
+
+    :param dia: SEG, TER, QUA, QUI, SEX, SAB ou DOM
+    :type: str
+
+    :param inicio: hora de inicio da aula (0 à 24)
+    :type: int
+
+    :param fim: hora de fim da aula (0 à 24)
+    :type: int
+    """
     dia: str
     inicio: int
     fim: int
@@ -22,6 +34,15 @@ class Horario:
 
 @dataclass
 class Destino:
+    # noinspection PyUnresolvedReferences
+    """Destino da turma
+
+    :param codigo: código do destino da turma (ex. QQC)
+    :type: str
+
+    :param nome: nome do destino da turma (ex. Qualquer curso)
+    :type: str
+    """
     codigo: str
     nome: str
 
@@ -31,6 +52,15 @@ class Destino:
 
 @dataclass
 class Alocacao:
+    # noinspection PyUnresolvedReferences
+    """Alocacao de uma turma
+
+    :param destino: Destino da turma
+    :type: Destino
+
+    :param vagas: quantidade de vagas da turma
+    :type: int
+    """
     destino: Destino
     vagas: int
 
@@ -133,7 +163,7 @@ class Turma:
         return f'<Turma [{self.codigo}]>'
 
     def as_dict(self):
-        """Converte o horário para um dicionario"""
+        """Converte a turma para um dicionario"""
 
         horarios = [
             asdict(x) for x in self._lista_horarios if x is not None
@@ -180,34 +210,42 @@ class Turma:
 
     @property
     def professor(self) -> str:
+        """Professor(a) que leciona a disciplina para essa turma"""
         return self._professor
 
     @property
     def codigo(self) -> str:
+        """Código da turma"""
         return self._codigo
 
     @property
     def turno(self) -> str:
+        """Turno da turma"""
         return self._turno
 
     @property
     def horarios(self) -> List[Horario]:
+        """Lista de horários da turma"""
         return self._lista_horarios
 
     @property
     def horario_distancia(self):
+        """Quantidade de horas à distância"""
         return self._horario_distancia
 
     @property
     def shf(self):
+        """Quantidade de horas sem hora fixa."""
         return self._shf
 
     @property
     def localizacao(self):
+        """Local onde é realizada a aula da turma"""
         return self._localizacao
 
     @property
     def alocacao(self):
+        """Alocacao (vagas e destino) da turma"""
         return self._alocacao
 
 
@@ -251,22 +289,30 @@ class Disciplina:
 
     @property
     def codigo(self) -> str:
+        """Código da disciplina"""
         return self._codigo
 
     @property
     def nome(self) -> str:
+        """Nome da disciplina"""
         return self._nome
 
     @property
     def creditos(self) -> int:
+        """Quantidade de créditos da discplina"""
         return self._creditos
 
     @property
     def pre_req(self) -> bool:
+        """Disciplina contém pré-requisitos"""
         return self._pre_req
 
     @property
     def ementa(self) -> Optional[str]:
+        """
+        Ementa da disciplina. Ela precisa ser baixada usando
+        `microhorario.coletar_disciplinas()`
+        """
         return self._ementa
 
     @ementa.setter
@@ -276,11 +322,14 @@ class Disciplina:
 
     @property
     def departamento(self) -> Departamento:
+        """Departamento da disciplina"""
         return self._departamento
 
     @property
     def turmas(self) -> List[Turma]:
+        """Lista de turmas da disciplina"""
         return list(self._turmas.values())
 
     def add_turma(self, turma: Turma):
+        """Adiciona uma turma na lista da disciplinas"""
         self._turmas[turma.codigo] = turma
