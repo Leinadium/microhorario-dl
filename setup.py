@@ -7,7 +7,7 @@ long_description = (here / "README.md").read_text(encoding='utf-8')
 
 setup(
     name='microhorario-dl',
-    version='1.2.0a1',
+    version='1.3.0a1',
     description='PUC-Rio Microhorario Downloader',
     long_description=long_description,
     long_description_content_type='text/markdown',

@@ -237,10 +237,8 @@ class Microhorario:
         total = len(self._disciplinas)
         for i, (cod, disc) in enumerate(self._disciplinas.items()):       # type: int, str, Disciplina
             if verbose:
-                print(f"[{i}/{total}] Disciplina ({cod} - {disc.nome})", end='...\t\t')
+                print(f"\r[{i}/{total}] Coletando ementa de [{cod}]", end='')
 
             disc.ementa = consulta_ementa(cod)
-            if verbose:
-                print(f'DONE ({disc.ementa[:20]}...)')
             sleep(0.2)
 
