@@ -71,6 +71,10 @@ def converte_para_json(texto_csv: str) -> dict:
 
         # splitando em brancos e retirando tambem o ';' final se tiver
         linha_split = linha.strip(' \n\r;').split(';')
+
+        if len(linha_split) == 14:
+            linha_split.pop(11)    # removendo horas de extensao
+
         if len(linha_split) != 13:
             warnings.warn(f"Linha iniciada em {linha_split[0]} está inválida")
             continue     # pula a linha que a informacao esta corrompida
