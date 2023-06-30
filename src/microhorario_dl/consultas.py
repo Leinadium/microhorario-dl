@@ -1,15 +1,17 @@
 import re
 import requests
+from warnings import warn
 from bs4 import BeautifulSoup
 
 # typing modules
 from typing import Dict, Any, Optional, Match, Union
 from bs4.element import Tag
+from requests import Response
 
 # local modules
-from .payloads import PAYLOAD_FINAL, PAYLOAD_INTERMEDIARIO
+from .payloads import PayloadMicrohorario
 from .utils import URL_CONSULTA, URL_INICIAL, USER_AGENT, pegar_sessao_da_url
-from .exceptions import EmptyTagValueError, TagNotFoundError, NotCSVError, PatternNotFoundError
+from .exceptions import EmptyTagValueError, TagNotFoundError, NotCSVError, PatternNotFoundError, WebExceptionError
 
 
 def de_opcoes_para_dicionario(t: Tag) -> Dict[str, str]:
@@ -26,6 +28,42 @@ def de_opcoes_para_dicionario(t: Tag) -> Dict[str, str]:
             if (ident is not None) and (nome is not None):
                 ret[ident] = nome
     return ret
+
+
+def consulta_excecao(conteudo: str) -> Response:
+    """
+    Caso a primeira consulta foi redirecionada para a página de erro.
+    Caso isso tenha acontecido, tenta ver se o "Horários e Salas" está disponível.
+    Nesse caso, retorna a requisição para a página de consulta.
+    """
+    # faz o parsing do conteudo
+    soup = BeautifulSoup(conteudo, features='html.parser')
+    span_msg: Tag = soup.find(id='lblMensagem')     # pega a tag de span
+    if span_msg is None:
+        raise WebExceptionError("Exceção não possui mensagem de erro")
+
+    # coleta a tag <a> dentro do conteudo
+    tag_links_msg: list[Tag] = span_msg.find_all('a')
+    if len(tag_links_msg) == 0:
+        raise WebExceptionError("Exceção não possui link de redirecionamento")
+    tag_link_msg: Tag = tag_links_msg[0]
+
+    link_correto = tag_link_msg.get('href')
+
+    # verifica se o link é o correto
+    if link_correto is None or "WebMicroHorarioConsulta" not in link_correto:
+        raise WebExceptionError("Link de redirecionamento não é o esperado")
+
+    # altera o modo e avisa
+    PayloadMicrohorario.altera_modo()
+    warn("Microhorário indisponível, utilizando 'Horarios e Salas' como alternativa. "
+         "A quantidade de créditos e as alocações (vagas por turma) estarão indisponíveis.")
+
+    # faz a requisição para o link correto
+    return requests.get(
+        url=link_correto,
+        headers={"User-Agent": USER_AGENT}
+    )
 
 
 def consulta_inicial() -> Dict[str, Any]:
@@ -60,13 +98,18 @@ def consulta_inicial() -> Dict[str, Any]:
 
     r = requests.get(
         url=URL_INICIAL,
-        headers={"User-Agent": USER_AGENT}
+        headers={"User-Agent": USER_AGENT},
+        allow_redirects=True
     )
 
     # pegando os cookies (juntando com os redirects)
     cookies: dict = r.cookies.get_dict()
     for r_history in r.history:
         cookies.update(r_history.cookies.get_dict())
+
+    # se foi redirecionado para uma excecao, tenta acessar o link correto
+    if "WebExcecao" in r.url:
+        r = consulta_excecao(r.text)
 
     # pegando propriedades do ASP.NET
     soup = BeautifulSoup(r.text, features='html.parser')
@@ -125,7 +168,7 @@ def consulta_intermediaria(dados_iniciais: Dict[str, Any]):
             raise PatternNotFoundError(nome=nome, regex=pattern)
         return m.group(1)
 
-    payload: dict = PAYLOAD_INTERMEDIARIO
+    payload: dict = PayloadMicrohorario.intermediario()
     payload.update(dados_iniciais['dados'])     # adiciona as variaveis coletadas no dados iniciais
 
     cookies = dados_iniciais.get('cookies')
@@ -138,7 +181,8 @@ def consulta_intermediaria(dados_iniciais: Dict[str, Any]):
         headers={
             'User-Agent': USER_AGENT,
             'Accept': 'text/plain',
-            'Content-Type': 'application/x-www-form-urlencoded'
+            'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8',
+            'Origin': "http://microhorario.rdc.puc-rio.br",     # noqa
         },
         data=payload
     )
@@ -149,7 +193,7 @@ def consulta_intermediaria(dados_iniciais: Dict[str, Any]):
         'sessao': sessao,
         'dados': {
             '__VIEWSTATEGENERATOR': regex_ou_aborta(
-                nome='',
+                nome='VIEWSTATEGENERATOR',
                 pattern=r'__VIEWSTATEGENERATOR\|([0-9a-zA-Z+\/=]+)\|',
                 string=r.text
             ),
@@ -167,7 +211,7 @@ def consulta_intermediaria(dados_iniciais: Dict[str, Any]):
     }
 
 
-def consulta_final(dados_intermediarios: Dict[str, Union[Tag, str]]) -> str:
+def consulta_final(dados_intermediarios: Dict[str, Union[Tag, str, dict]]) -> str:
     """
     Faz a consulta final, para obter o CSV com todas as disciplinas no microhorario.
 
@@ -179,7 +223,7 @@ def consulta_final(dados_intermediarios: Dict[str, Union[Tag, str]]) -> str:
     :return: o texto do csv baixado
     """
     # preparando os dados
-    payload: dict = PAYLOAD_FINAL
+    payload: dict = PayloadMicrohorario.final()
     payload.update(dados_intermediarios.get('dados'))     # adiciona as variaveis coletadas no dados iniciais
 
     cookies = dados_intermediarios.get('cookies')
@@ -190,9 +234,15 @@ def consulta_final(dados_intermediarios: Dict[str, Union[Tag, str]]) -> str:
         url=URL_CONSULTA,
         cookies=cookies,
         headers={
+            'Host': "microhorario.rdc.puc-rio.br",
             'User-Agent': USER_AGENT,
-            'Accept': 'text/csv',
-            'Content-Type': 'application/x-www-form-urlencoded'
+            'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8',
+            'Accept-Language': "en-US,en;q=0.5",
+            'Content-Type': 'application/x-www-form-urlencoded',
+            'Origin': "http://microhorario.rdc.puc-rio.br",  # noqa
+            'Connection': 'keep-alive',
+            'Referer': f"{URL_CONSULTA}?sessao={sessao}",
+            'Upgrade-Insecure-Requests': '1',
         },
         params={'sessao': sessao},
         data=payload

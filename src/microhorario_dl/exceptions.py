@@ -18,7 +18,7 @@ class TagNotFoundError(BaseParsingError):
 
     def __init__(self, tag: str):
         self.tag = tag
-        super().__init__(f'Tag {tag} não encontrada' % tag)
+        super().__init__(f'Tag {tag} não encontrada')
 
 
 class EmptyTagValueError(BaseParsingError):
@@ -62,3 +62,15 @@ class NotCSVError(BaseParsingError):
         super().__init__("Consulta final não retornou um CSV")
 
 
+class WebExceptionError(BaseParsingError):
+    """Exceção levantada quando a consulta inicial
+    retorna uma página de erro.
+
+    Isso pode acontecer quando os
+    headers ou o payload da consulta estão incorretos.
+    """
+
+    def __init__(self, mensagem: str = ""):
+        if not mensagem:
+            mensagem = "Primeira consulta retornou uma página de erro"
+        super().__init__(mensagem)
