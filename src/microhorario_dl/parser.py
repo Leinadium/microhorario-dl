@@ -72,11 +72,20 @@ def converte_para_json(texto_csv: str) -> dict:
         # splitando em brancos e retirando tambem o ';' final se tiver
         linha_split = linha.strip(' \n\r;').split(';')
 
+        if len(linha_split) == 11:
+            # caso especifico quando cai no Horarios e Salas (microhorario desligado)
+            # nao existe a linha de 'créditos', 'destino' e 'vaga'
+            linha_split.insert(3, '-1')     # creditos
+            linha_split.insert(5, '--')     # destino
+            linha_split.insert(6, '--')     # vaga
+
         if len(linha_split) == 14:
-            linha_split.pop(11)    # removendo horas de extensao
+            # removendo horas de extensao (atualização nova do microhorario)
+            linha_split.pop(11)
 
         if len(linha_split) != 13:
-            warnings.warn(f"Linha iniciada em {linha_split[0]} está inválida")
+            warnings.warn(f"Linha iniciada em {linha_split[0]} está inválida: contém {len(linha_split)} elementos,"
+                          f"esperado: 14, 13 ou 11")
             continue     # pula a linha que a informacao esta corrompida
 
         codigo = linha_split[0].strip()
