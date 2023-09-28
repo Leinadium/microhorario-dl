@@ -9,8 +9,8 @@ com o microhorário e baixar todas as disciplinas
 """
 
 __author__ = "Daniel Guimarães (github.com/Leinadium)"
-__version__ = "1.4.1"
-__copyright__ = "Copyright (c) 2022 Daniel Guimarães"
+__version__ = "1.5.0"
+__copyright__ = "Copyright (c) 2023 Daniel Guimarães"
 __license__ = "MIT"
 
 from time import sleep
