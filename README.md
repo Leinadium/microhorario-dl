@@ -77,10 +77,10 @@ Importe e baixe os dados:
 [<Disciplina [ACN1000]>, <Disciplina[ACN1002]>, ...]
 ```
 
-Baixe as ementas:
+Baixe as ementas e prerequisitos:
 
 ```pycon
->>> micro.coletar_ementas(verbose=True)
+>>> micro.coletar_extra(verbose=True)
 [0/ 2000] Baixando ACN1000...  DONE (...)
 [1/ 2000] Baixando ACN1002...  DONE (...)
 [2/ 2000] Baixando ACN1004...

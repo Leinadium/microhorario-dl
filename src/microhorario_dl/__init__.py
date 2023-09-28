@@ -18,7 +18,7 @@ from time import sleep
 from .consultas import consulta_inicial, consulta_intermediaria, consulta_final
 from .parser import converte_para_json
 from .models import RawDisciplina, Disciplina, Turma, Alocacao, Departamento, Destino
-from .ementa import consulta_ementa
+from .ementa import consulta_extra
 
 from typing import Dict, List, Optional
 
@@ -186,7 +186,7 @@ class Microhorario:
                 creditos=raw.creditos,
                 departamento=departamento
             )
-            # adiciona a turma na propria disciplinia
+            # adiciona a turma na propria disciplina
             disciplina.add_turma(turma)
 
             self._disciplinas[raw.codigo] = disciplina
@@ -224,21 +224,30 @@ class Microhorario:
             ]
         }
 
-    def coletar_ementas(self, verbose=True):
+    def coletar_extra(self, verbose=True):
         """
-        Coleta as ementas de todas as disciplinas cadastradas.
+        Coleta as ementas e pre-requisitos de todas as disciplinas cadastradas.
 
-        Essa função irá fazer uma chamada ao site da PUC para cada ementa, por isso
+        Essa função irá fazer uma chamada ao site da PUC para cada ementa e prerequisito, por isso
         o tempo de execução é longo.
 
         :param verbose: imprime o status atual no stdout
         """
 
         total = len(self._disciplinas)
-        for i, (cod, disc) in enumerate(self._disciplinas.items()):       # type: int, str, Disciplina
+        for i, (cod, disc) in enumerate(self._disciplinas.items()):       # type: int, (str, Disciplina)
             if verbose:
                 print(f"\r[{i}/{total}] Coletando ementa de [{cod}]", end='')
 
-            disc.ementa = consulta_ementa(cod)
-            sleep(0.2)
+            em, pr = consulta_extra(cod)
+            disc.ementa = em
 
+            # convertendo para disciplinas
+            disc.prerequisitos = [
+                # se a disciplina nao existir, nao coloca na lista
+                # afinal, tornaria impossivel de ser cumprido
+                [self._disciplinas.get(x) for x in grupo if x in self._disciplinas]
+                for grupo in pr
+            ]
+
+            sleep(0.2)

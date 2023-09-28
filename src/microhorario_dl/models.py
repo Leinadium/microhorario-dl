@@ -281,6 +281,7 @@ class Disciplina:
         self._creditos: int = creditos
         self._pre_req: bool = pre_req
         self._ementa: Optional[str] = None
+        self._prereqs: Optional[List[List["Disciplina"]]] = None
         self._departamento = departamento
         self._turmas: Dict[str, Turma] = dict()
 
@@ -319,6 +320,16 @@ class Disciplina:
     def ementa(self, new_ementa: str):
         if self._ementa is None:
             self._ementa = new_ementa
+
+    @property
+    def prerequisitos(self) -> List[List["Disciplina"]]:
+        """Lista de grupos de pré-requisitos da disciplina"""
+        return self._prereqs
+
+    @prerequisitos.setter
+    def prerequisitos(self, new_prereqs: List[List["Disciplina"]]):
+        if self._prereqs is None:
+            self._prereqs = new_prereqs
 
     @property
     def departamento(self) -> Departamento:

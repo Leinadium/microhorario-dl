@@ -3,34 +3,58 @@ import warnings
 from bs4 import BeautifulSoup
 
 # typing
-from typing import Optional
+from typing import Optional, List, Tuple
 from bs4.element import Tag
 
 
 URL_EMENTA = "https://www.puc-rio.br/ferramentas/ementas/ementa.aspx?cd={codigo}"
 
 
-def encontra_ementa(html: str) -> Optional[str]:
+def encontra_ementa(soup: BeautifulSoup) -> Optional[str]:
     """
     Faz o parsing do html, procurando o texto da ementa.
 
     Retorna o texto da ementa se encontrar, ou None
 
-    :param html: string contendo o html da página da ementa
+    :param soup: objeto BeautifulSoup contendo a página da ementa
 
     :return:
     """
-
-    soup = BeautifulSoup(html, features='html.parser')
 
     tag_ementa: Tag = soup.find(id='pEmenta', recursive=True)
 
     return tag_ementa.text if tag_ementa is not None else None
 
 
-def consulta_ementa(codigo: str) -> str:
+def encontra_prerequisitos(soup: BeautifulSoup) -> List[List[str]]:
     """
-    Faz uma consulta para a página da ementa, e retorna a ementa.
+    Faz o parsing do html, procurando os grupos de prerequisitos.
+
+    Retorna uma lista de grupos de ementas, ou None
+
+    :param soup: objeto BeautifulSoup contendo a página da ementa
+    """
+    ret = []
+
+    tag_prerequisito: Tag = soup.find(id='prerequisito', recursive=True)
+    if tag_prerequisito is None:
+        return ret
+
+    for tag_grupo in tag_prerequisito.find_all('span'):
+        grupo = set()
+        for tag_disc in tag_grupo.find_all('a'):
+            disc = tag_disc.text.strip().upper()
+            if disc:
+                grupo.add(disc)
+        if grupo:
+            ret.append(list(grupo))
+
+    return ret
+
+
+def consulta_extra(codigo: str) -> Tuple[str, List[List[str]]]:
+    """
+    Faz uma consulta para a página da ementa, e retorna a ementa e prerequisitos.
 
     Há um sleep de 0.3 segundos para evitar muitas consultas em pouco tempo ao site.
 
@@ -42,11 +66,19 @@ def consulta_ementa(codigo: str) -> str:
     """
 
     ementa_erro = "Disciplina sem ementa cadastrada"
+    prereq_erro = []
 
     r = requests.get(URL_EMENTA.format(codigo=codigo))
     if r.status_code != 200:
         warnings.warn(f"Consulta da ementa da disciplina {codigo} retornou codigo {r.status_code}")
-        return ementa_erro
+        return ementa_erro, prereq_erro
 
-    ementa = encontra_ementa(r.text)
-    return ementa.strip() if ementa is not None else ementa_erro
+    soup = BeautifulSoup(r.text, features='html.parser')
+
+    ementa = encontra_ementa(soup)
+    prereqs = encontra_prerequisitos(soup)
+
+    return (
+        ementa.strip() if ementa is not None else ementa_erro,
+        prereqs
+    )
