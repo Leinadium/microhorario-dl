@@ -6,7 +6,7 @@ from typing import Optional, Dict, Match, List
 
 
 RE_HORARIO = re.compile(
-    r'((?P<dia>SEG|TER|QUA|QUI|SEX|SAB|DOM)\s(?P<inicio>[0-9]{2})-(?P<fim>[0-9]{2})\s)?(?P<local>[a-zA-Z0-9]+)'
+    r'^((?P<dia>SEG|TER|QUA|QUI|SEX|SAB|DOM)\s(?P<inicio>[0-9]{2})-(?P<fim>[0-9]{2})\s)?(?P<local>[a-zA-Z0-9]+)?$'
 )
 
 
@@ -192,7 +192,7 @@ class Turma:
         """
         local = None
         for t in texto.split('  '):
-            m: Match = RE_HORARIO.match(t)
+            m: Match = RE_HORARIO.match(t.strip())
             if m is None:
                 return
 
