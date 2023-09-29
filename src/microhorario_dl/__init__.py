@@ -9,11 +9,12 @@ com o microhorário e baixar todas as disciplinas
 """
 
 __author__ = "Daniel Guimarães (github.com/Leinadium)"
-__version__ = "1.5.1"
+__version__ = "1.5.2"
 __copyright__ = "Copyright (c) 2023 Daniel Guimarães"
 __license__ = "MIT"
 
 from time import sleep
+from warnings import warn
 
 from .consultas import consulta_inicial, consulta_intermediaria, consulta_final
 from .parser import converte_para_json
@@ -239,8 +240,11 @@ class Microhorario:
             if verbose:
                 print(f"\r[{i}/{total}] Coletando ementa de [{cod}]", end='')
 
-            em, pr = consulta_extra(cod)
-            disc.ementa = em
+            em, pr = "Disciplina sem ementa cadastrada.", []
+            try:
+                em, pr = consulta_extra(cod)
+            except Exception as e:
+                warn(f"Erro ao coletar ementa da disciplina {cod}: {e}")
 
             # convertendo para disciplinas
             disc.prerequisitos = [
@@ -249,5 +253,6 @@ class Microhorario:
                 [self._disciplinas.get(x) for x in grupo if x in self._disciplinas]
                 for grupo in pr
             ]
+            disc.ementa = em
 
             sleep(0.2)
