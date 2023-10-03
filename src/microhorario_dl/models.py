@@ -144,7 +144,7 @@ class Turma:
                  horario_distancia: int,
                  shf: int,
                  horario_e_localizacao: str,
-                 alocacao: Alocacao
+                 alocacoes: List[Alocacao]
                  ):
 
         self._professor = professor
@@ -152,7 +152,9 @@ class Turma:
         self._turno = turno
         self._horario_distancia = horario_distancia
         self._shf = shf
-        self._alocacao = alocacao
+        self._alocacoes: dict[str, Alocacao] = {
+            x.destino.codigo: x for x in alocacoes
+        }
 
         # fazendo parsing do horario de local
         self._lista_horarios = []
@@ -169,8 +171,7 @@ class Turma:
             asdict(x) for x in self._lista_horarios if x is not None
         ]
         localizacao = self.localizacao if self.localizacao is not None else ''
-        destino = self.alocacao.destino.codigo
-        vagas = self.alocacao.vagas
+        alocacoes = [{'destino': k, 'vagas': v.vagas} for k, v in self._alocacoes]
 
         return {
             'professor': self.professor,
@@ -180,9 +181,12 @@ class Turma:
             'shf': self.shf,
             'horarios': horarios,
             'localizacao': localizacao,
-            'destino': destino,
-            'vagas': vagas
+            'alocacoes': alocacoes
         }
+
+    def add_alocacao(self, alocacao: Alocacao):
+        if alocacao.destino.codigo not in self._alocacoes:
+            self._alocacoes[alocacao.destino.codigo] = alocacao
 
     def _parse_horario_localizacao(self, texto: str):
         """Faz o parsing da string contendo os horarios e a localização,
@@ -244,9 +248,9 @@ class Turma:
         return self._localizacao
 
     @property
-    def alocacao(self):
-        """Alocacao (vagas e destino) da turma"""
-        return self._alocacao
+    def alocacoes(self):
+        """Alocacoes (vagas e destino) da turma"""
+        return list(self._alocacoes.values())
 
 
 @dataclass
@@ -343,4 +347,7 @@ class Disciplina:
 
     def add_turma(self, turma: Turma):
         """Adiciona uma turma na lista da disciplinas"""
-        self._turmas[turma.codigo] = turma
+        if turma.codigo in self._turmas:
+            self._turmas[turma.codigo].add_alocacao(turma.alocacoes[0])
+        else:
+            self._turmas[turma.codigo] = turma

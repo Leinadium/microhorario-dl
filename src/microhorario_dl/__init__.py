@@ -95,6 +95,7 @@ class Microhorario:
         self._dados_crus: dict = dados_crus
         self._disciplinas: Dict[str, Disciplina] = dict()
         self._departamentos: Dict[str, Departamento] = dict()
+        self._alocacoes: Dict[str, Alocacao] = dict()
 
         # adicionando departamentos
         if isinstance(departamentos, dict):
@@ -158,11 +159,12 @@ class Microhorario:
             horario_distancia=raw.horas_distancia,
             shf=raw.shf,
             horario_e_localizacao=raw.horario_local,
-            alocacao=alocacao
+            alocacoes=[alocacao]
         )
 
-        # se ja existir a turma, só adiciona na disciplina
+        # se ja existir a disciplina, só adiciona a turma
         if raw.codigo in self._disciplinas:
+            # (se a turma ja existir, a disciplina pega a alocacao)
             self._disciplinas[raw.codigo].add_turma(turma)
 
         # se nao existir, tem que criar a disciplina tambem
