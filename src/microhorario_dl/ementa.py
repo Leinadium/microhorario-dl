@@ -30,7 +30,7 @@ def encontra_prerequisitos(soup: BeautifulSoup) -> List[List[str]]:
     """
     Faz o parsing do html, procurando os grupos de prerequisitos.
 
-    Retorna uma lista de grupos de ementas, ou None
+    Retorna uma lista de grupos de ementas
 
     :param soup: objeto BeautifulSoup contendo a página da ementa
     """
@@ -52,7 +52,26 @@ def encontra_prerequisitos(soup: BeautifulSoup) -> List[List[str]]:
     return ret
 
 
-def consulta_extra(codigo: str) -> Tuple[str, List[List[str]]]:
+def encontra_credito(soup: BeautifulSoup) -> Optional[int]:
+    """
+    Faz o parsing do html, procurando a quantidade de creditos.
+
+    Retorna um inteiro contendo a quantidade
+
+    :param soup: objeto BeautifulSoup contendo a página da ementa
+    """
+    tag_creditos: Tag = soup.find(id='hCreditos', recursive=True)
+    if tag_creditos is None:
+        return None
+
+    try:
+        c: int = int(tag_creditos.text.strip().split()[0])
+        return c if c > 0 else None
+    except ValueError:
+        return None
+
+
+def consulta_extra(codigo: str) -> Tuple[str, List[List[str]], Optional[int]]:
     """
     Faz uma consulta para a página da ementa, e retorna a ementa e prerequisitos.
 
@@ -67,18 +86,21 @@ def consulta_extra(codigo: str) -> Tuple[str, List[List[str]]]:
 
     ementa_erro = "Disciplina sem ementa cadastrada"
     prereq_erro = []
+    creditos_erro = None
 
     r = requests.get(URL_EMENTA.format(codigo=codigo))
     if r.status_code != 200:
         warnings.warn(f"Consulta da ementa da disciplina {codigo} retornou codigo {r.status_code}")
-        return ementa_erro, prereq_erro
+        return ementa_erro, prereq_erro, creditos_erro
 
     soup = BeautifulSoup(r.text, features='html.parser')
 
     ementa = encontra_ementa(soup)
     prereqs = encontra_prerequisitos(soup)
+    creditos = encontra_credito(soup)
 
     return (
         ementa.strip() if ementa is not None else ementa_erro,
-        prereqs
+        prereqs,
+        creditos
     )

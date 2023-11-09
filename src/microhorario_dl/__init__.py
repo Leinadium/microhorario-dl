@@ -250,9 +250,9 @@ class Microhorario:
             if verbose:
                 print(f"\r[{i}/{total}] Coletando ementa de [{cod}]", end='')
 
-            em, pr = "Disciplina sem ementa cadastrada.", []
+            em, pr, cred = "Disciplina sem ementa cadastrada.", [], None
             try:
-                em, pr = consulta_extra(cod)
+                em, pr, cred = consulta_extra(cod)
             except Exception as e:
                 warn(f"Erro ao coletar ementa da disciplina {cod}: {e}")
 
@@ -264,5 +264,8 @@ class Microhorario:
                 for grupo in pr
             ]
             disc.ementa = em
+
+            if cred is not None and cred > 0:
+                disc.creditos = cred
 
             sleep(0.2)

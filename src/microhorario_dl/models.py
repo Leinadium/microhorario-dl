@@ -307,6 +307,11 @@ class Disciplina:
         """Quantidade de créditos da discplina"""
         return self._creditos
 
+    @creditos.setter
+    def creditos(self, new_creditos: int):
+        if self._creditos > 0:
+            self._creditos = new_creditos
+
     @property
     def pre_req(self) -> bool:
         """Disciplina contém pré-requisitos"""
