@@ -9,7 +9,7 @@ com o microhorário e baixar todas as disciplinas
 """
 
 __author__ = "Daniel Guimarães (github.com/Leinadium)"
-__version__ = "1.6.1"
+__version__ = "1.6.2"
 __copyright__ = "Copyright (c) 2023 Daniel Guimarães"
 __license__ = "MIT"
 
