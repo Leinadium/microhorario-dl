@@ -1,4 +1,4 @@
-__all__ = ["PayloadMicrohorario"]
+__all__ = ["PayloadMicrohorario", "PayloadModo"]
 
 from enum import Enum, auto
 
@@ -56,6 +56,10 @@ class PayloadMicrohorario:
     @classmethod
     def altera_modo(cls):
         cls.MODO = PayloadModo.MICROHORARIO if cls.MODO == PayloadModo.HORARIO else PayloadModo.HORARIO
+
+    @classmethod
+    def get_modo(cls):
+        return cls.MODO
 
     @classmethod
     def intermediario(cls) -> dict:

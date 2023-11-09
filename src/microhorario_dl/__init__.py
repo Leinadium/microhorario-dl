@@ -20,6 +20,7 @@ from .consultas import consulta_inicial, consulta_intermediaria, consulta_final
 from .parser import converte_para_json
 from .models import RawDisciplina, Disciplina, Turma, Alocacao, Departamento, Destino
 from .ementa import consulta_extra
+from .payloads import PayloadMicrohorario, PayloadModo
 
 from typing import Dict, List, Optional
 
@@ -54,6 +55,7 @@ class Microhorario:
             departamentos=inicio.get('departamentos'),
             destinos=inicio.get('destinos')
         )
+        instance._modo_fallback = PayloadMicrohorario.get_modo() == PayloadModo.HORARIO
 
         for rd in dados_crus['disciplinas']:    # type: RawDisciplina
             instance._add_raw_disciplina(rd)
@@ -96,6 +98,7 @@ class Microhorario:
         self._disciplinas: Dict[str, Disciplina] = dict()
         self._departamentos: Dict[str, Departamento] = dict()
         self._alocacoes: Dict[str, Alocacao] = dict()
+        self._modo_fallback: bool = False
 
         # adicionando departamentos
         if isinstance(departamentos, dict):
@@ -108,6 +111,11 @@ class Microhorario:
             self._destinos: Optional[dict] = destinos
         else:
             self._destinos: Optional[dict] = None
+
+    @property
+    def is_modo_fallback(self):
+        """Retorna se o microhorario está em modo fallback"""
+        return self._modo_fallback
 
     @property
     def periodo(self):
