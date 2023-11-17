@@ -309,7 +309,7 @@ class Disciplina:
 
     @creditos.setter
     def creditos(self, new_creditos: int):
-        if self._creditos > 0:
+        if new_creditos > 0:
             self._creditos = new_creditos
 
     @property
